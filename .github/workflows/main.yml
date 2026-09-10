@@ -1,8 +1,27 @@
 name: Common Test
+run-name: "Common Test ${{ inputs.leg || github.event_name }} ${{ inputs.racecar_run }}"
 
-on: [pull_request, push]
+on:
+  pull_request:
+  push:
 
+  workflow_dispatch:
+    inputs:
+      leg:
+        description: "baseline (uninstrumented) or instrumented (under chalk/curiosity)"
+        type: choice
+        options: [instrumented, baseline]
+        default: baseline
+      profile:
+        description: "CrashOverride chalk profile"
+        type: string
+        default: curiosity-tests-racecar
+      racecar_run:
+        description: "racecar correlation token, echoed into the run name"
+        type: string
+        default: ""
 env:
+  CHALK_ON: ${{ inputs.leg == 'instrumented' }}
   LATEST_OTP_RELEASE: 28
 
 permissions:
@@ -37,6 +56,7 @@ jobs:
       if: ${{ matrix.otp_version == env.LATEST_OTP_RELEASE }}
 
   macos:
+    if: false   # racecar: non-Linux runner, not measured here
     name: Test on MacOS
     runs-on: macos-latest
 
@@ -66,6 +86,7 @@ jobs:
       run: ./rebar3 ct
 
   windows:
+    if: false   # racecar: non-Linux runner, not measured here
     name: Test on Windows
     runs-on: windows-latest
 
